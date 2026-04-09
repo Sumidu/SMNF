@@ -1,7 +1,8 @@
 # This file runs all test documents
 
 start_at <- 1
-#start_at <- 16
+#start_at <- 17
+# 16 takes rather long
 
 library(stringr)
 # run test files
