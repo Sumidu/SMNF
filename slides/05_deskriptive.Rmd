@@ -1,0 +1,572 @@
+---
+title: "Deskriptive Statistik"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "**Prof. Dr. André Calero Valdez**"
+date: ""
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "imis.css"]  
+    lib_dir: libs
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(datasets)
+library(kableExtra)
+modus <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+```
+
+```{r child="header.Rmd"}
+```
+
+---
+# Wiederholung
+
+## Skalenniveaus
+Nomial > Ordinal > Intervall
+
+## Likert-Skala
+Kombination mehrere Ordinale => Intervall
+- z.B. KUT (8 Items), ATI (9 Items)
+- Berechnung der Skala über Mittelwert der Items (`psych` package)
+
+
+
+---
+class: inverse, center, middle
+# .yellow[Deskriptive Statistik]
+
+---
+# Wir benötigen
+
+## Tidy Data
+
+1. Jede Variable ist eine Spalte
+2. Jede Beobachtung ist eine Zeile
+3. Jeder Wert hat seine eigene Zelle
+
+![](img/r4ds_tidy_data.png)
+[G. Grolemond & H. Wickham's R for Data Science](https://r4ds.had.co.nz/tidy-data.html)
+
+---
+
+# Untidy data: Beispiel 1
+
+```{r}
+untidy_data <- tibble(
+  name = c("Ana","Bob","Cara"),
+  meds = c("advil 600mg 2xday","tylenol 650mg 4xday", "advil 200mg 3xday")
+)
+untidy_data %>% kable()
+```
+
+---
+
+# Tidy data: Beispiel 1
+
+
+```{r}
+untidy_data %>% 
+  separate(col = meds, into = c("med_name","dose_mg","times_per_day"), sep=" ") %>%
+  mutate(times_per_day = as.numeric(str_remove(times_per_day, "xday")),
+         dose_mg = as.numeric(str_remove(dose_mg, "mg"))) %>% 
+  kable()
+```
+
+
+---
+
+# Untidy data: Beispiel 2
+
+```{r}
+untidy_data2 <- tibble(
+  name = c("Ana","Bob","Cara"),
+  wt_07_01_2018 = c(100, 150, 140),
+  wt_08_01_2018 = c(104, 155, 138),
+  wt_09_01_2018 = c(NA, 160, 142)
+)
+untidy_data2 %>% kable()
+```
+
+
+---
+
+# Tidy data: Beispiel 2
+
+
+```{r}
+untidy_data2 %>% 
+  gather(key = "date", value = "weight", -name) %>%
+  mutate(date = str_remove(date,"wt_"),
+         date = lubridate::dmy(date)) %>%     # dmy() ist eine Funktion aus lubridate
+  kable()
+```
+
+---
+# Codebooks
+
+- Dokumentation der Bedeutung der Variablen
+  - Welche Frage wurde gestellt? 
+  - Welche Antwortoptionen gab es?
+- Variablen im Datensatz
+  - kurze, prägnante Namen
+
+---
+
+# Data cleaning
+
+- Löschen von nicht benötigten Spalten
+  - z.B. temporäre Daten
+  - leere Spalten (systembedingt generiert)
+- Löschen von sinnlosen Zeilen 
+  - Speeder (Bearbeitungszeit von wenigen Sekunden)
+  - Daten mit offensichtlichen Fehlern (Alter von 200 Jahren)
+- Variablen haben das korrekte Skalen-Niveau
+  - Faktoren anlegen 
+  - Ordnungen anlegen
+  - Skalen berechnen (später mehr)
+
+
+---
+# Ausgangslage
+
+## Unsere Daten sind bereinigt 
+- Variablen sind umbenannt (Codebook)
+- Nur noch relevante Spalten (`select` oder über `df[,c()]`)
+- Sinnlose Einträge gefiltert
+- Faktoren sind Faktoren (`factor()` or `ordered()`)
+  - Ordinale Skalen haben eine Ordnung bekommen
+- Skalen sind berechnet
+
+## Daten kommunizieren
+
+- Was tun wir um effizient Daten zu kommunizieren?
+
+--
+- Tabelle aller Daten?
+
+--
+
+Wir laden alle Daten in eine Variable `my_data`.
+
+---
+# Deskriptive Statistik
+
+
+```{r raw_data_table, fig.width=6, echo=F}
+library(dataforsocialscience)
+my_data <- robo_care
+DT::datatable(
+  my_data[,c(1,2,5,6,7,8)], fillContainer = FALSE, options = list(pageLength = 7) )
+
+```
+
+Quelle: robo_care Datensatz 
+https://github.com/statisticsforsocialscience/dataforsocialscience 
+
+---
+
+# Deskriptive Statistik
+Die deskriptive (beschreibende) Statistik hat zum Ziel, empirische Daten durch Kennzahlen und Tabellen (auch: Maßzahlen oder Parameter) *und* Grafiken übersichtlich darzustellen und zu ordnen. 
+
+- Große Mengen an Daten sind unübersichtlich
+- Wir brauchen eine kompaktere Darstellung, die die "Essenz" der Daten wiedergibt.
+
+--
+
+## Zentrale Tendenz
+- Wo liegt das "Zentrum" der Daten?
+
+## Dispersion
+- Wie streuen die Daten um das "Zentrum"?
+
+
+
+---
+class: inverse, center, middle
+# .yellow[Zentrale Tendenz]
+
+---
+# Zentrale Tendenz (Lagemaße)
+
+## Was bedeutet das: "Zentrum" der Daten?
+
+--
+Der Schwerpunkt oder der Punkt der meisten Häufung!
+
+--
+
+- Was bedeutet es in Abhängigkeit der Skalenniveaus?
+
+--
+
+## Verschiedene Maße für die zentrale Tendenz
+ Je nach Skalenniveau und Verteilung
+- Modus (Nomial)
+- Median (Ordinal)
+- Mittelwert (Intervall)
+
+
+---
+# Modus
+
+## Modus ist der häufigste Wert der Verteilung
+Kann durch einfaches Auszählen (table) gefunden werden
+```{r gender_table}
+table(my_data$gender)
+```
+
+--
+
+`weiblich` ist der Modus unserer Daten
+
+
+---
+# table Funktion
+Der Modus lässt sich auch von intervall-skalierten Daten berechnen
+```{r age_table}
+table(my_data$age)
+```
+
+--
+Was ist hier der Modus?
+```{r age_modus}
+max(table(my_data$age))
+```
+
+
+---
+class: inverse, center, middle
+# .yellow[Verteilung der Daten]
+
+
+---
+# Graphiken mit GGPlot2
+```{r echo=FALSE, out.width="75%", dpi=600}
+knitr::include_graphics("figs/deskriptive/ggplot2_masterpiece.png")
+```
+
+
+
+---
+# Zeichnen
+- Zum Überprüfen hilft ein Blick in den Plot der Variable
+- Quickplot aus dem `ggplot2` package ist hilfreich (Teil des Tidyverse).
+
+```{r qplot_gender, fig.height=4}
+qplot(my_data$gender) 
+
+```
+
+---
+# Zeichnen
+- Zum Überprüfen hilft ein Blick in den Plot der Variable
+- Quickplot aus dem `ggplot2` package ist hilfreich (Teil des Tidyverse).
+
+```{r qplot_label, fig.height=4}
+qplot(my_data$gender) + xlab("Geschlecht")
+
+```
+
+
+---
+# Zeichnen (ggplot2 modern)
+- Quickplot aus dem `ggplot2` package ist deprecated :(
+
+```{r qplot_label_new, fig.height=4}
+# qplot(my_data$gender) + xlab("Geschlecht")
+ggplot(my_data) + aes(x=gender) + geom_bar() + xlab("Geschlecht")
+```
+
+
+---
+# Zeichnen von intervall-skalierten Daten
+```{r qplot_age, echo=T, fig.height=4}
+qplot(my_data$age)
+```
+
+
+---
+# Zeichnen von intervall-skalierten Daten
+```{r qplot_age_label, echo=T, fig.height=4}
+qplot(my_data$age) + xlab("Alter")
+```
+
+---
+# Zeichnen von intervall-skalierten Daten
+```{r qplot_age_bins10, echo=T, fig.height=4}
+qplot(my_data$age, binwidth = 10) + xlab("Alter")
+```
+
+---
+# Zeichnen von intervall-skalierten Daten
+```{r qplot_age_bins1, echo=T, fig.height=4}
+qplot(my_data$age, binwidth = 1) + xlab("Alter")
+```
+
+
+---
+# Zeichnen von intervall-skalierten Daten
+```{r qplot_age_bins_new, echo=T, fig.height=4}
+# qplot(my_data$age, binwidth = 1) + xlab("Alter")
+ggplot(my_data) + aes(x = age) + geom_histogram(binwidth = 1) + xlab("Alter")
+```
+
+
+---
+# Histogramm
+```{r age_histogram, echo=F, fig.height=3}
+qplot(my_data$age, binwidth = 1) + xlab("Alter") + ylab("Absolute Häufigkeit")
+```
+Dient zum Darstellen der Verteilung
+- Einsortieren der Datenpunkt in "bins" oder "buckets" (de: Dosen)
+- Balkenhöhe entspricht Menge an Datenpunkten in jedem Bin
+- Höhepunkt ist Modus (bei `binwidth = 1`)
+
+
+---
+# Median
+
+Der Median ist der Wert der Daten der in der Mitte steht.
+Dafür sortiert man die Daten "aufsteigend" und zählt die Daten.
+Man teilt die Anzahl durch 2 und wählt somit den Datenpunkt der in der Mitte der Verteilung steht.
+- Berechnung mit der Funktion `median`
+
+```{r median_rep, eval=F}
+v <- c(1, 2, 3, 4, 5)
+
+median(v)
+```
+
+---
+# Median
+
+Der Median ist der Wert der Daten der in der Mitte steht.
+Dafür sortiert man die Daten "aufsteigend" und zählt die Daten.
+Man teilt die Anzahl durch 2 und wählt somit den Datenpunkt der in der Mitte der Verteilung steht.
+- Berechnung mit der Funktion `median`
+
+```{r median}
+v <- c(1, 2, 3, 4, 5)
+
+median(v)
+```
+--
+
+## Was passiert beim Hinzufügen von Daten?
+```{r median_outlier}
+v <- c(1, 2, 3, 4, 5, 1000)
+```
+
+---
+# Median ist aussreisserstabil
+- Hinzufügen von extrem großen oder kleinen Werten 
+```{r median_outlier_comparison}
+v1 <- c(1, 2, 3, 4, 5)
+v2 <- c(1, 2, 3, 4, 5, 1000)
+
+median(v1)
+median(v2)
+```
+
+
+---
+# Mittelwert
+## Arithmetisches Mittel
+- Gleichgewichtetes Mittel
+  - jeder Datenpunkt hat gleichen Einfluss auf den Mittelwert
+  - Summe aller Werte durch die Anzahl der Werte teilen
+$$M=\frac{1}{n}\sum_{i=1}^nx_i$$
+- über die Funktion `mean` 
+
+
+```{r mean}
+v <- c(1, 2, 3, 4, 5)
+mean(v)
+```
+
+---
+# Ausreisserstabilität
+Was passiert wenn man Aussreisser hinzufügt?
+```{r mean_outlier, fig.height=2}
+v1 <- c(1, 2, 3, 4, 5)
+mean(v1)
+v2 <- c(1, 2, 3, 4, 5, 1000)
+mean(v2)
+```
+
+
+--
+## Der Mittelwert ist sensibel gegen Ausreisser.
+
+
+---
+# Verschiedene Mittelwerte
+
+## Arithmetisches Mittel
+Summative Methoden (addieren durch N teilen)
+$$M=\frac{1}{n}\sum_{i=1}^nx_i$$
+Häufig geschrieben als (echter Mittelwert):
+$$\mu=\frac{1}{N}\sum_{i=1}^Nx_i$$
+und (gemessener Mittelwert):
+$$\bar{x}=\frac{1}{n}\sum_{i=1}^nx_i$$ 
+
+
+---
+# Verschiedene Mittelwerte
+## Geometrisches Mittel
+Multiplikative Methode (multiplizieren n-te Wurzel ziehen)
+- Kommt zum Einsatz wenn es um Mittelwerte aus verschiedenen Skalen geht geht
+$$M_{geom}=\sqrt[n]{\prod_{i=1}^nx_i}$$
+---
+# Verschiedene Mittelwerte
+## Harmonisches Mittel
+Kehrwert des arithmetischen Mittels der Kehrwerte
+- Kommt zum Einsatz wenn es um Verhältnisse geht
+$$M_{harm}=\frac{n}{\sum_{i=1}^n\frac{1}{x_i}}$$
+
+---
+class:center
+#Zentrale Tendenz
+<img src="figs/deskriptive/means.png" width=30%>
+
+
+---
+class: inverse, center, middle
+# .yellow[Dispersion]
+
+
+---
+# Dispersion
+- Wie weit "streuen" die Daten (im Mittel)
+
+```{r qplot_hist_mean, echo=F, fig.height=4}
+qplot(my_data$age, binwidth = 1) + xlab("Alter") + ylab("Absolute Häufigkeit") + geom_vline(aes(xintercept = mean(my_data$age)), color = "red")
+```
+
+
+---
+# Dispersionsmaße
+
+## Varianz
+Die Varianz misst die Streuung der Messwerte zu einem Mittelwert (M)
+- Quadrat der Abweichung vom Mittelwert wird summiert und dann durch die Anzahl der Werte geteilt.
+- Quadrat verhindert negative Werte
+$$\sigma ^{2}={\frac {1}{N}}\sum \limits _{i=1}^{N}(x_{i}-\mu )^{2}$$
+
+--
+
+Und als empirische Varianz:
+$$VAR=s^2 = {\frac {1}{n-1}}\sum \limits _{i=1}^{n}(x_{i}-\bar{x})^{2}$$
+
+Nachteil: Abweichung ist in quadratischen Einheiten
+
+
+<!--TODO Text auf Folie-->
+
+---
+# Standardabweichung
+- Durch Wurzelziehen verschwinden die quadratischen Einheiten.
+
+
+$$SD=+{\sqrt {{\frac {1}{n-1}}\sum \limits _{i=1}^{n}\left(x_{i}-{\overline {x}}\right)^{2}}}$$
+
+<img src="figs/deskriptive/sd.png" width=60%>
+
+---
+# Unterschied empirische und echte Dispersion
+
+### Erläuterung 
+
+- Die Streuung der Messwerte $x_i$ hängt in empirischen Daten von dem empirischen Mittelwert $\overline {x}$ ab. 
+- Dieser Werte ist aber bereits der Durchschnit aller $x_i$.
+- Damit is jeder Wert $x_i$ selbst anteilig $\frac{1}{n}$ in $\overline {x}$ enthalten.
+- Das reduzieren der Stichprobe um $-1$ korrigiert genau diesen Anteil.
+
+
+--
+
+
+### Bessels' Korrektur
+$$\frac{n}{n-1} \times {\frac {1}{n}}\sum \limits _{i=1}^{n} (x_{i}-{\overline {x})^{2}}$$
+
+--
+
+### Mit anderen Worten:
+
+Die Formel für die echte Varianz unterschätzt bei Verwendung des empirischen Mittelwert die Varianz, weil eine Stichproben-Verzerrung des Mittelwerts immer in der "Mitte" der empirischen Messung liegt.
+
+
+
+---
+# Standardabweichung (SD) in R
+
+```{r sd}
+sd(my_data$age)
+```
+
+```{r hist_sd, echo=F, fig.height=4}
+qplot(my_data$age, binwidth = 1) + xlab("Alter") + ylab("Absolute Häufigkeit") + 
+  geom_vline(aes(xintercept = mean(my_data$age)), color="red") +
+  geom_vline(aes(xintercept = mean(my_data$age)+sd(my_data$age)), color="blue") +
+  geom_vline(aes(xintercept = mean(my_data$age)-sd(my_data$age)), color="blue") 
+```
+
+---
+# Standardfehler (SE) in R
+Standardabweichung ist unabhängig von der Stichprobengrößen.
+Normierung über Anzahl der Datenpunkte.
+```{r se}
+n <- dim(my_data)[1]
+sd(my_data$age) / sqrt(n)
+```
+
+```{r hist_se, echo=F, fig.height=4}
+qplot(my_data$age, binwidth = 1) + xlab("Alter") + ylab("Absolute Häufigkeit") + 
+  geom_vline(aes(xintercept = mean(my_data$age)), color="red") +
+  geom_vline(aes(xintercept = mean(my_data$age)+sd(my_data$age)/ sqrt(dim(my_data)[1])), color="blue") +
+  geom_vline(aes(xintercept = mean(my_data$age)-sd(my_data$age)/ sqrt(dim(my_data)[1])), color="blue") 
+```
+
+---
+## Übersicht aller Deskriptive Parameter in R
+- im `psych` Package
+```{r describe, warning=F, eval=F}
+psych::describe(my_data) 
+```
+.tiny[
+```{r describe_show, warning=F, echo=F}
+psych::describe(my_data) %>% kable()
+```
+]
+
+---
+# Sonstige deskriptive Statistiken
+**Range** oder Variationsbreite: Distanz von Minimum zu Maximum
+
+**Trimmed mean** Mean der inneren 80% (ohne 20% Ausreisser)
+
+**Median absolute Deviation** Spalte `mad` aus `describe`
+
+**Quartile** Daten in 4 gleichgroße Teile aufteilen.
+
+**Interquartile-Range** Abstand zwischen Teil 1 und 4
+
+**Perzentil** Grenze für x% viele Werte. Bsp. 90-Perzentil, Grenze unter der 90% der Werte liegen.
+
+---
+class: inverse, center, middle
+---
+class: inverse, center, middle
+## .yellow[ [Zurück zur Übersicht](index.html)]
+  
+  
+  

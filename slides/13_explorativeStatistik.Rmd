@@ -1,0 +1,150 @@
+---
+title: "Deskriptive, explorative und schließende Statistik"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "**Prof. Dr. André Calero Valdez**"
+date: ""
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "imis.css"]  
+    lib_dir: libs
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+#library(plyr)
+library(tidyverse)
+library(datasets)
+library(kableExtra)
+library(purrr)
+library(scales)
+library(forecast)
+library(likert)
+#library(gghighlight)
+library(jmv)
+```
+
+```{r child="header.Rmd"}
+```
+
+
+
+# Anwendung Statistik
+
+## Deskriptive Statistik
+
+## Inferenz Statistik
+
+## Explorative Statistik
+
+---
+# Statistik
+
+## Deskriptive Statistik
+- Verfahren zur Beschreibung von Daten
+- Tabellen, Abbildungen
+- Lagemaße, Dispersionsmaße, Verteilungsmaße
+
+--
+
+## Inferenz Statistik
+- Verfahren zur **Prüfung** von Hypothesen (NHST)
+- Unterschiedshypothesen
+  - t-Test, Varianzanalysen
+- Zusammenhangshypothesen
+  - Korrelation, lineare Regression
+- Alpha-Fehler, $H_0$, $p$-Wert
+- Vergleich mit Zufallsprozessen
+- Übertragung von Stichprobe auf Grundgesamtheit
+
+---
+# Explorative Statistik
+
+## Ziel: Entdecken von neuen Zusammenhängen oder Unterschieden
+- Messen von vielen Parametern
+- hypothesenfreie Suche nach statistischen Signifikanzen
+- Durchführen von großen Mengen von Testsverfahren
+- Korrelationstabellen, t-Tests, etc.
+- Suchen von Strukturen in Daten: Strukturentdeckende Verfahren
+
+--
+
+## Welche Verfahren sind geeignet?
+- Jedes Inferenzstatistische Verfahren, das viele Eingabeparameter erlaubt.
+- Cluster-Analyse, explorative Faktorenanalyse (PCA oder EFA) 
+- Visualisierungsverfahren
+
+---
+# Korrelationsmatrixplots
+
+```{r corrplots, echo=FALSE}
+suppressMessages(
+  library(corrplot)
+)
+d <- dataforsocialscience::robo_care
+d %>% 
+  select(starts_with("robo"), starts_with("huma")) %>% 
+  hcictools::cor.matrix.plot()
+
+```
+
+---
+# Korrelationsmatrixplots
+
+```{r corrplots-2, echo=FALSE, message=FALSE}
+library(corrplot)
+library(hcictools)
+```
+
+```{r corrplots-3}
+d %>% 
+  select(starts_with("robo")) %>% 
+  hcictools::cor.matrix.plot()
+
+```
+
+
+---
+# Small Multiples
+
+```{r small-multiples, echo=FALSE, message=FALSE, warning=FALSE}
+
+d %>% filter(gender != "keine Angabe") %>%
+  mutate(age_group = ntile(age, 3)) %>%
+  mutate(age_group = factor(age_group, labels = c("jung", "mittel", "alt"))) %>%
+  ggplot() +
+  aes(x = cse, y = robo_face) +
+  geom_jitter() +
+  geom_smooth(method = "lm") + facet_grid(age_group ~ gender) + theme_minimal(base_size = 16) +
+  labs(x = "Kontrollüberzeugung im Umgang mit Technik", y = "Akzeptanz robotischer Pflege: Gesichtspflege")
+
+```
+
+
+---
+# k-Means Clustering
+
+- Methoden zum Aufdecken von ähnlichen Probanden (Typologie)
+- Man wählt die Anzahl an Klassen
+- Algorithmus findet Klassenzugehörigkeit
+
+## Iteratives Verfahren
+- Schritt für Schritt Verbesserung
+  1. Wähle Klassenmittelpunkt
+  2. Wähle Zugehörige Daten/Probanden
+  3. Wähle neuen Klassenmittelpunkt
+
+
+## Visuelle Erklärung des Algorithmus
+[https://www.naftaliharris.com/blog/visualizing-k-means-clustering/](https://www.naftaliharris.com/blog/visualizing-k-means-clustering/)
+
+
+
+---
+class: inverse, center, middle
+---
+class: inverse, center, middle
+## .yellow[ [Zurück zur Übersicht](index.html)]

@@ -1,0 +1,180 @@
+---
+title: "Likert-Skalen"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "**Prof. Dr. André Calero Valdez**"
+date: ""
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "imis.css"]  
+    lib_dir: libs
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(datasets)
+library(kableExtra)
+library(purrr)
+library(scales)
+library(forecast)
+library(likert)
+library(jmv)
+```
+
+```{r child="header.Rmd"}
+```
+
+# Wiederholung
+## Skalenniveaus, Messniveaus
+
+--
+
+  - Nominal, Ordinal, Intervall
+  - `factor`, `ordered`, `numeric`
+
+--
+
+## Nominal 
+- Test auf Gleichheit
+
+--
+
+## Ordinal
+- Ordnungen
+
+--
+
+## Intervall
+- Abstände und Relationen
+- Für viele Verfahren benötigt (z.B. lineare Regression)
+
+---
+# Forschungsmodell
+## Notation
+Forschungsfrage: Wirkt sich die Schulnote auf die wahrgenommene Polarisierung aus?
+
+![](figs/skalen/model.png)
+
+
+
+---
+# Null-Hypothesen Signifikanz Tests
+
+## Unterschiedshypothesen
+1. t-Test
+2. Varianzanalyse
+
+## Zusammenhangshypothesen
+1. Korrelation
+2. Lineare Regression
+
+> Benötigen intervallskalierte Daten
+
+
+---
+# Schwierigkeiten für Medieninformatik
+- Womit können wir intervallskalierte Daten messen?
+
+--
+
+## Likert Skalen
+- Entwickelt von Rensis Likert (5-Point Likert Scale) zum Messen von Einstellungen.
+- Einzelne Items werden ordinal gemessen:
+  - z.B.: KUT: 8 Items
+- Dabei sind die Stufen benannt:
+  - 5P: Stimme sehr zu, stimme zu, neutral, stimme nicht zu, stimme gar nicht zu
+  - 6P: Stimme sehr zu, stimme zu, stimme eher zu, stimme eher nicht zu, stimme nicht zu, stimme gar nicht zu
+- Skalenstufen werden ganzzahligen Werten zugeordnet (z.B.: 0-4, 0-5, 1-6, etc.)
+
+---
+# Gerarde oder ungerade?
+## Gerade Likert-Skalen
+- Forced choice
+- Vermeiden von Antworten wird reduziert
+
+## Ungerade Likert-Skalen
+- Möglichkeit keine Meinung abzugeben
+- Möglichkeit neutrale Meinung abzugeben.
+
+
+## "Keine Angabe" als N+1te Option
+
+---
+# Ordinal oder Intervall
+Ob einzele Items Likert-Skalen ordinal oder intervall-skalierte Daten liefert, wird immernoch diskutiert.
+
+## Wo ist der Unterschied?
+
+--
+
+- Willkürliche Wahl der "Labels"
+
+--
+
+- Gleichabständigkeit?
+
+--
+
+- Auswahl der Verfahren 
+  - ordinale vs. lineare Regression
+  - t-Test vs. Wilcoxon signed Rank test
+
+--
+
+## Ab 4 (besser 8) Items intervallskaliert
+- Summative Skala
+- Zentraler Grenzwertsatz
+
+
+
+---
+# Visuelle Analyse von Likert Skalen
+
+```{r, echo=F}
+
+library(likert)
+dataforsocialscience::robo_care %>% select(starts_with("human")) %>% select(1:5) -> df_part
+
+agree <- function(x) {
+  factor(as.character(x), levels = 1:6, ordered = T, 
+         labels = c("strongly disagree",
+                    "disagree",
+                    "rather disagree",
+                    "rather sagree",
+                    "agree",
+                    "strongly agree"))
+}
+
+df_part %>% mutate_all(agree) %>% as.data.frame() -> df_lik 
+
+```
+ 
+```{r echo=T, fig.height=5}
+lik <- df_lik %>% likert()
+plot(lik, type = "bar")
+```
+Gallerie: https://github.com/jbryer/likert
+
+---
+# Numerische Analyse
+
+```{r echo=T}
+psych::describe(df_lik)
+```
+
+
+
+
+---
+class: inverse, center, middle
+# Sind das wirklich alles verschiedene Dinge?
+
+---
+class: inverse, center, middle
+---
+class: inverse, center, middle
+## .yellow[ [Zurück zur Übersicht](index.html)]

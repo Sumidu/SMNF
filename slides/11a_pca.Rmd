@@ -1,0 +1,299 @@
+---
+title: "Strukturen in Daten entdecken (PCA)"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "**Prof. Dr. André Calero Valdez**"
+date: ""
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "imis.css"]  
+    lib_dir: libs
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(knitr)
+library(dataforsocialscience)
+library(jmv)
+set.seed(123)
+
+
+library(likert)
+dataforsocialscience::robo_care %>% select(starts_with("human")) %>% select(1:5) -> df_part
+
+agree <- function(x) {
+  factor(as.character(x), levels = 1:6, ordered = T, 
+         labels = c("strongly disagree",
+                    "disagree",
+                    "rather disagree",
+                    "rather sagree",
+                    "agree",
+                    "strongly agree"))
+}
+
+df_part %>% mutate_all(agree) %>% as.data.frame() -> df_lik 
+
+```
+
+```{r child="header.Rmd"}
+```
+
+
+---
+class:center, middle
+# Skalenbildung
+ 1.Variablenauswahl (korrelierende Variablen)
+
+ 2.Faktoranalyse (Principal Component Analysis)
+
+ 3.Reliabilitätsanalyse (Cronbach's Alpha) 
+ 
+---
+<style>
+.remark-code, .remark-inline-code { font-family: 'Source Code Pro', 'Lucida Console', Monaco, monospace;
+                                    font-size: 75%;
+                                  }
+</style>                              
+# Skalenbildung
+
+- Items die stark korrelieren kommen in Betracht
+
+```{r}
+jmv::corrMatrix(df_part, vars = names(df_lik))
+```
+
+
+
+---
+# Faktorenanalyse
+Die Faktorenanalyse prüft ob die Varianz mehrere Variablen eine (oder mehrere) gemeinsame Dimensionen beschreiben.
+
+## Beispiel: Big Five Persönlichkeit
+- Ich bin eher zurückhaltend, reserviert. 
+- Ich schenke anderen leicht Vertrauen, glaube an das Gute im Menschen. 
+- Ich bin bequem, neige zur Faulheit. 
+- Ich bin entspannt, lasse mich durch Stress nicht aus der Ruhe bringen. 
+- Ich habe nur wenig künstlerisches Interesse. 
+- Ich gehe aus mir heraus, bin gesellig. 
+- Ich neige dazu, andere zu kritisieren. 
+- Ich erledige Aufgaben gründlich. 
+- Ich werde leicht nervös und unsicher. 
+- Ich habe eine aktive Vorstellungskraft, bin fantasievoll.
+
+
+---
+# Faktorenanalyse
+Die Faktorenanalyse prüft ob die Varianz mehrere Variablen eine (oder mehrere) gemeinsame Dimensionen beschreiben.
+
+## Beispiel: Big Five Persönlichkeit
+- Ich bin eher zurückhaltend, reserviert. (Extraversion)
+- Ich schenke anderen leicht Vertrauen, glaube an das Gute im Menschen. (Verträglichkeit)
+- Ich bin bequem, neige zur Faulheit. (Gewissenhaftigkeit)
+- Ich bin entspannt, lasse mich durch Stress nicht aus der Ruhe bringen. (Neurotizismus)
+- Ich habe nur wenig künstlerisches Interesse. (Offenheit)
+- Ich gehe aus mir heraus, bin gesellig. (Extraversion)
+- Ich neige dazu, andere zu kritisieren. (Verträglichkeit)
+- Ich erledige Aufgaben gründlich. (Gewissenhaftigkeit)
+- Ich werde leicht nervös und unsicher. (Neurotizismus)
+- Ich habe eine aktive Vorstellungskraft, bin fantasievoll. (Offenheit)
+---
+# Faktorenanalyse
+- Exploratives, strukturentdeckendes Verfahren
+
+Erstmal 2-Dimensionaler Fall:
+- Multivariate Daten, die korrelieren
+
+```{r, warning=FALSE, fig.height=5}
+psych::bfi %>% ggplot() + aes(C1, C2) + geom_jitter() + geom_smooth(method = "lm") + labs(caption="Jitter-Plot 10%")
+```
+
+---
+# Faktoren-Analyse
+## Was passiert da eigentlich?
+Rotation der Hauptachsen zur Reduktion der Streuung in der Nebenachse
+![](figs/skalen/dimrotation.gif)
+---
+# Faktorenanalyse durchführen
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+jmv::pca(df_part, vars = names(df_part), 
+         screePlot = TRUE, 
+         eigen = TRUE, 
+         kmo = TRUE, 
+         bartlett = TRUE, 
+         factorCor = TRUE) 
+
+```
+
+---
+# Faktorenanalyse durchführen
+## Vorraussetzungen prüfen
+- Bartlett's Test muss signifikant werden
+- KMO MSA > 0.8
+```{r eval=T, message=FALSE, warning=FALSE, echo=F}
+res <- jmv::pca(df_part, vars = names(df_part), 
+         eigen = T, 
+         kmo = T, 
+         bartlett = T,
+         factorCor = T) 
+res$assump
+
+
+```
+
+---
+# Faktorenanalyse durchführen
+## Eigenwerte
+- Aufgeklärte Varianz pro Faktor (Komponente)
+- Hinweis auf Anzahl Faktoren
+```{r eval=T, message=FALSE, warning=FALSE, echo=F}
+res$eigen
+
+
+```
+---
+# Faktorenanalyse durchführen
+## Korrelationen der Faktoren
+- Stark korrelierende Faktoren können problematisch sein
+- Hängt von der Rotation ab: Varimax
+```{r eval=T, message=FALSE, warning=FALSE, echo=F}
+res$factorStats
+
+```
+
+---
+# Faktorenanalyse durchführen
+## Ladungen der Items auf Faktoren
+- Ladungen sollten groß sein (>0.8)
+- Uniqenuess zeigt an, welcher Varianzanteil im Faktor verloren geht.
+```{r eval=T, message=FALSE, warning=FALSE, echo=F}
+res$loadings
+
+```
+
+---
+# Faktorenanalyse durchführen
+## Screeplot
+- Wo unterschreiten die Eigenwerte die simulierten Daten
+```{r echo=F, message=FALSE, warning=FALSE, fig.height = 5}
+jmv::pca(df_part, vars = names(df_part), screePlot = T) -> model
+
+model$eigen$screePlot
+
+```
+
+
+
+
+---
+class: center, middle
+# Faktoren identifiziert!
+Nächster Schritt: summative Skala bilden!
+
+Items weglassen?
+
+---
+# Reliabilitätsanalyse
+
+- Prüft, ob die Skala in sich reliabel misst (interne Reliabilität). 
+- Passen die Items "zusammen".
+
+- Gemessen wird "Cronbach's alpha".
+
+## Schwellwerte Cronbach's alpha
+ Internal consistency
+- 0.9 ≤ α	Excellent
+- 0.8 ≤ α < 0.9	Good
+- 0.7 ≤ α < 0.8	Acceptable
+- 0.6 ≤ α < 0.7	Questionable
+- 0.5 ≤ α < 0.6	Poor
+- α < 0.5	Unacceptable
+
+---
+# Reliabilität in R
+```{r}
+psych::alpha(df_part)
+```
+
+---
+# Beispiel mit mehr Faktoren
+Datensatz `bfi` aus dem `psych` paket
+
+```{r paged.print=TRUE}
+
+psychTools::bfi.dictionary %>% select(Item) %>%  kable()
+```
+
+---
+# Beispiel mit mehr Faktoren
+Datensatz `bfi` aus dem `psych` paket
+```{r eval=T, message=FALSE, warning=FALSE, echo=F}
+df <- psych::bfi %>% select(-gender, -education, -age)
+model <- psych::pca(df, nfactors = 5)
+psych::fa.diagram(model)
+```
+
+
+---
+# Beispiel mit mehr Faktoren
+Datensatz `bfi` aus dem `psych` paket
+
+```{r eval=T, message=FALSE, warning=FALSE, echo=F}
+res <- jmv::pca(df, vars = names(df), 
+         eigen = T, 
+         kmo = T, 
+         bartlett = T,
+         factorCor = T) 
+res$assump
+
+```
+
+---
+# Eigenwerte
+```{r eval=T, message=FALSE, warning=FALSE, echo=F}
+res$eigen
+```
+
+
+---
+# Screeplot
+
+```{r eval=T, message=FALSE, warning=FALSE, echo=F}
+jmv::pca(df, vars = names(df), screePlot = T) -> model
+model$eigen$screePlot
+```
+
+---
+# Ladungen
+```{r eval=T, message=FALSE, warning=FALSE, echo=F}
+res$loadings
+
+```
+
+---
+# Zusammenfassung
+
+## Likert-Skalen
+- Vor- und Nachteile
+- Ordinal oder Intervall
+
+## Faktoranalyse
+- Korrelationsanalyse
+- Principal-Component-Analysis (PCA)
+  - Vorraussetzungen: KMO und Bartlett
+  - ggfs. Korrelation
+  - Eigenwerte
+  - Ladungen
+
+## Reliabilitätsanalyse
+
+
+---
+class: inverse, center, middle
+---
+class: inverse, center, middle
+## .yellow[ [Zurück zur Übersicht](index.html)]

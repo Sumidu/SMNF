@@ -1,0 +1,12 @@
+00_Organisatorisches.html
+00_Organisatorisches_files
+01_Forschunsmethoden.html
+header.md
+index.html
+03_theorieempirie.html
+02_QualiQuanti.html
+*.html
+*_files
+libs
+slides/*.html
+slides/*files

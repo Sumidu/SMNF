@@ -1,0 +1,44 @@
+---
+title: "Übersicht"
+subtitle: "Statistik und Methoden der Nutzerforschung"
+author: "**Prof. Dr. André Calero Valdez**"
+date: ""
+output:
+  xaringan::moon_reader:
+    seal: false
+    css: ["default", "default-fonts", "imis.css"]  
+    lib_dir: libs
+    nature:
+      ratio: '16:9'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+library(stringr)
+library(glue)
+options(htmltools.dir.version = FALSE)
+```
+
+## Statistik und Methoden der Nutzerforschung PY1802
+**Übersicht**
+```{r agenda, echo=FALSE, results='asis'}
+# Write a function to read find all html files and get their titles and create a list
+files <- dir(pattern = ".html")
+files <- files[!files %in% c("index.html")]
+rmds <- dir(pattern = ".Rmd")
+res <- "\n"
+for (i in 1:length(files)) {
+  matching_rmd <- str_replace(files[i], ".html", ".Rmd")
+  title <- rmarkdown::yaml_front_matter(matching_rmd)$title
+  res <- paste0(res, 
+                glue(" {i} - {title} [Link]({files[i]})<br/>\n")
+                )
+}
+cat(res)
+
+# TODO: move figures to includegraphics
+# TODO: separate topics in individual smaller chunks
+```
+
