@@ -1,0 +1,517 @@
+---
+
+title: "Deskriptive Statistik"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "Prof. Dr. André Calero Valdez"
+date: ""
+output:
+  powerpoint_presentation:
+    reference_doc: "../Vorlage-Lehre.pptx"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(datasets)
+library(purrr)
+library(scales)
+library(knitr)
+modus <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+```
+
+## Wiederholung
+
+## Skalenniveaus
+Nomial > Ordinal > Intervall
+
+## Likert-Skala
+Kombination mehrere Ordinale => Intervall
+- z.B. KUT (8 Items), ATI (9 Items)
+- Berechnung der Skala über Mittelwert der Items (`psych` package)
+
+
+
+---
+
+# Deskriptive Statistik
+
+---
+
+## Wir benötigen
+
+## Tidy Data
+
+1. Jede Variable ist eine Spalte
+2. Jede Beobachtung ist eine Zeile
+3. Jeder Wert hat seine eigene Zelle
+
+![](img/r4ds_tidy_data.png)
+[G. Grolemond & H. Wickham's R for Data Science](https://r4ds.had.co.nz/tidy-data.html)
+
+---
+
+## Untidy data: Beispiel 1
+
+```{r}
+untidy_data <- tibble(
+  name = c("Ana","Bob","Cara"),
+  meds = c("advil 600mg 2xday","tylenol 650mg 4xday", "advil 200mg 3xday")
+)
+untidy_data %>% kable()
+```
+
+---
+
+## Tidy data: Beispiel 1
+
+
+```{r}
+untidy_data %>%
+  separate(col = meds, into = c("med_name","dose_mg","times_per_day"), sep=" ") %>%
+  mutate(times_per_day = as.numeric(str_remove(times_per_day, "xday")),
+         dose_mg = as.numeric(str_remove(dose_mg, "mg"))) %>%
+  kable()
+```
+
+
+---
+
+## Untidy data: Beispiel 2
+
+```{r}
+untidy_data2 <- tibble(
+  name = c("Ana","Bob","Cara"),
+  wt_07_01_2018 = c(100, 150, 140),
+  wt_08_01_2018 = c(104, 155, 138),
+  wt_09_01_2018 = c(NA, 160, 142)
+)
+untidy_data2 %>% kable()
+```
+
+
+---
+
+## Tidy data: Beispiel 2
+
+
+```{r}
+untidy_data2 %>%
+  gather(key = "date", value = "weight", -name) %>%
+  mutate(date = str_remove(date,"wt_"),
+         date = lubridate::dmy(date)) %>%
+  kable()
+```
+
+---
+
+## Codebooks
+
+- Dokumentation der Bedeutung der Variablen
+  - Welche Frage wurde gestellt?
+  - Welche Antwortoptionen gab es?
+- Variablen im Datensatz
+  - kurze, prägnante Namen
+
+---
+
+## Data cleaning
+
+- Löschen von nicht benötigten Spalten
+  - z.B. temporäre Daten
+  - leere Spalten (systembedingt generiert)
+- Löschen von sinnlosen Zeilen
+  - Speeder (Bearbeitungszeit von wenigen Sekunden)
+  - Daten mit offensichtlichen Fehlern (Alter von 200 Jahren)
+- Variablen haben das korrekte Skalen-Niveau
+  - Faktoren anlegen
+  - Ordnungen anlegen
+  - Skalen berechnen (später mehr)
+
+
+---
+
+## Ausgangslage
+
+## Unsere Daten sind bereinigt
+- Variablen sind umbenannt (Codebook)
+- Nur noch relevante Spalten (`select` oder über `df[,c()]`)
+- Sinnlose Einträge gefiltert
+- Faktoren sind Faktoren (`factor()` or `ordered()`)
+  - Ordinale Skalen haben eine Ordnung bekommen
+- Skalen sind berechnet
+
+## Daten kommunizieren
+
+- Was tun wir um effizient Daten zu kommunizieren?
+- Tabelle aller Daten?
+
+Wir laden alle Daten in eine Variable `my_data`.
+
+---
+
+## Deskriptive Statistik
+
+
+```{r raw_data_table, echo=F}
+library(dataforsocialscience)
+my_data <- robo_care
+knitr::kable(head(my_data[,c(1,2,5,6,7,8)], 8))
+```
+
+Quelle: robo_care Datensatz
+https://github.com/statisticsforsocialscience/dataforsocialscience
+
+---
+
+## Deskriptive Statistik
+Die deskriptive (beschreibende) Statistik hat zum Ziel, empirische Daten durch Kennzahlen und Tabellen (auch: Maßzahlen oder Parameter) *und* Grafiken übersichtlich darzustellen und zu ordnen.
+
+- Große Mengen an Daten sind unübersichtlich
+- Wir brauchen eine kompaktere Darstellung, die die "Essenz" der Daten wiedergibt.
+
+## Zentrale Tendenz
+- Wo liegt das "Zentrum" der Daten?
+
+## Dispersion
+- Wie streuen die Daten um das "Zentrum"?
+
+
+
+---
+
+# Zentrale Tendenz
+
+---
+
+## Zentrale Tendenz (Lagemaße)
+
+## Was bedeutet das: "Zentrum" der Daten?
+
+Der Schwerpunkt oder der Punkt der meisten Häufung!
+
+- Was bedeutet es in Abhängigkeit der Skalenniveaus?
+
+## Verschiedene Maße für die zentrale Tendenz
+ Je nach Skalenniveau und Verteilung
+- Modus (Nomial)
+- Median (Ordinal)
+- Mittelwert (Intervall)
+
+
+---
+
+## Modus
+
+## Modus ist der häufigste Wert der Verteilung
+Kann durch einfaches Auszählen (table) gefunden werden
+```{r gender_table}
+table(my_data$gender)
+```
+
+`weiblich` ist der Modus unserer Daten
+
+
+---
+
+## table Funktion
+Der Modus lässt sich auch von intervall-skalierten Daten berechnen
+```{r age_table}
+table(my_data$age)
+```
+
+Was ist hier der Modus?
+```{r age_modus}
+max(table(my_data$age))
+```
+
+
+---
+
+# Verteilung der Daten
+
+
+---
+
+## Graphiken mit GGPlot2
+```{r echo=FALSE, out.width="75%", dpi=600}
+knitr::include_graphics("figs/deskriptive/ggplot2_masterpiece.png")
+```
+
+
+
+---
+
+## Zeichnen (ggplot2)
+
+```{r qplot_label_new, fig.height=4}
+ggplot(my_data) + aes(x=gender) + geom_bar() + xlab("Geschlecht")
+```
+
+
+---
+
+## Zeichnen von intervall-skalierten Daten
+```{r qplot_age_bins1, echo=T, fig.height=4}
+ggplot(my_data) + aes(x = age) + geom_histogram(binwidth = 1) + xlab("Alter")
+```
+
+
+---
+
+## Histogramm
+```{r age_histogram, echo=F, fig.height=3}
+ggplot(my_data) + aes(x = age) + geom_histogram(binwidth = 1) +
+  xlab("Alter") + ylab("Absolute Häufigkeit")
+```
+Dient zum Darstellen der Verteilung
+- Einsortieren der Datenpunkt in "bins" oder "buckets" (de: Dosen)
+- Balkenhöhe entspricht Menge an Datenpunkten in jedem Bin
+- Höhepunkt ist Modus (bei `binwidth = 1`)
+
+
+---
+
+## Median
+
+Der Median ist der Wert der Daten der in der Mitte steht.
+- Berechnung mit der Funktion `median`
+
+```{r median}
+v <- c(1, 2, 3, 4, 5)
+median(v)
+```
+
+---
+
+## Median ist aussreisserstabil
+- Hinzufügen von extrem großen oder kleinen Werten
+```{r median_outlier_comparison}
+v1 <- c(1, 2, 3, 4, 5)
+v2 <- c(1, 2, 3, 4, 5, 1000)
+
+median(v1)
+median(v2)
+```
+
+
+---
+
+## Mittelwert
+## Arithmetisches Mittel
+$$M=\frac{1}{n}\sum_{i=1}^nx_i$$
+
+```{r mean}
+v <- c(1, 2, 3, 4, 5)
+mean(v)
+```
+
+---
+
+## Ausreisserstabilität
+```{r mean_outlier}
+v1 <- c(1, 2, 3, 4, 5)
+mean(v1)
+v2 <- c(1, 2, 3, 4, 5, 1000)
+mean(v2)
+```
+
+## Der Mittelwert ist sensibel gegen Ausreisser.
+
+
+---
+
+## Verschiedene Mittelwerte
+
+## Arithmetisches Mittel
+$$\bar{x}=\frac{1}{n}\sum_{i=1}^nx_i$$
+
+## Geometrisches Mittel
+$$M_{geom}=\sqrt[n]{\prod_{i=1}^nx_i}$$
+
+## Harmonisches Mittel
+$$M_{harm}=\frac{n}{\sum_{i=1}^n\frac{1}{x_i}}$$
+
+---
+
+# Dispersion
+
+
+---
+
+## Dispersion
+- Wie weit "streuen" die Daten (im Mittel)
+
+```{r qplot_hist_mean, echo=F, fig.height=4}
+ggplot(my_data) + aes(x = age) + geom_histogram(binwidth = 1) +
+  xlab("Alter") + ylab("Absolute Häufigkeit") +
+  geom_vline(aes(xintercept = mean(my_data$age)), color = "red")
+```
+
+
+---
+
+## Dispersionsmaße
+
+## Varianz
+$$\sigma ^{2}={\frac {1}{N}}\sum \limits _{i=1}^{N}(x_{i}-\mu )^{2}$$
+
+Und als empirische Varianz:
+$$VAR=s^2 = {\frac {1}{n-1}}\sum \limits _{i=1}^{n}(x_{i}-\bar{x})^{2}$$
+
+Nachteil: Abweichung ist in quadratischen Einheiten
+
+---
+
+## Standardabweichung
+
+$$SD=+{\sqrt {{\frac {1}{n-1}}\sum \limits _{i=1}^{n}\left(x_{i}-{\overline {x}}\right)^{2}}}$$
+
+```{r sd}
+sd(my_data$age)
+```
+
+---
+
+## Unterschied empirische und echte Dispersion
+
+### Bessels' Korrektur
+$$\frac{n}{n-1} \times {\frac {1}{n}}\sum \limits _{i=1}^{n} (x_{i}-{\overline {x})^{2}}$$
+
+---
+
+## Quartile und Interquartile Range
+
+**Range** oder Variationsbreite: Distanz von Minimum zu Maximum
+
+**Quartile** Daten in 4 gleichgroße Teile aufteilen.
+
+**Interquartile-Range** Abstand zwischen Teil 1 und 4
+
+**Perzentil** Grenze für x% viele Werte. Bsp. 90-Perzentil, Grenze unter der 90% der Werte liegen.
+
+---
+
+## Übersicht aller Deskriptiver Parameter in R
+
+```{r describe, warning=F, eval=F}
+psych::describe(my_data)
+```
+
+```{r describe_show, warning=F, echo=F}
+psych::describe(my_data) %>% kable()
+```
+
+---
+
+# Was ist Inferenz?
+
+---
+
+## Inferenz
+
+> Inferenz ist eine Schlußfolgerung mit Wahrheitsaussage.
+
+Inferenz ist ein Teilgebiet der Logik, mit analogen Definitionen in der Linguistik, Informatik, Statistik.
+- Ein logischer Schluß
+
+Voraussetzung:
+- Prämissen und Gesetze oder Hypothesen und Inferenzregeln
+
+![](figs/inferenz/log-schluss.png)
+
+---
+
+## Motivation
+## Beschreibung der Welt trotz unvollständiger Daten
+
+- Wir erheben immer nur Stichproben (entw. Personen oder Zeitpunkte)
+- Wir sind an der Regel oder der Grundgesamtheit interessiert.
+- Wir brauchen *Werkzeuge* um von der Stichprobe auf die Grundgesamtheit zu gelangen.
+
+---
+
+## Einfaches Beispiel
+## Münzwurf: Fair oder unfair?
+
+- Was ist Stichprobe, was ist Grundgesamtheit?
+
+>Wie häufig muss man eine Münze werfen, bis man sich sicher ist, dass die Münze fair ist?
+
+## Es gibt keine absolute Sicherheit bei Zufallsprozessen.
+
+---
+
+## Relative Sicherheit - Konfidenz
+##Wir sind uns zu xx% sicher (konfident), dass ein Ereignis eintritt.
+
+Wie viele Münzwürfe (Kopf + Zahl) brauchen wir, dass wir uns zu 95% sicher sind, dass die Münze fair ist?
+
+## Fairness ist eine Punktschätzung (p = 0.5) und damit nicht lösbar.
+
+---
+
+## Konfidenzintervall
+
+```{r konfidenzintervall, echo=F, fig.height=6, fig.width=10}
+set.seed(0)
+c.level <- 0.95
+
+btest <- function(n, num = 1){
+  res <- binom.test(c(n, n), p = 0.5, conf.level = c.level )
+  res$conf.int[num]
+}
+
+n <- 20
+df <- data.frame(count = 1:n, mean = 0.5,
+                 ci_lo = map_dbl(1:n, btest, 1),
+                 ci_hi = map_dbl(1:n, btest, 2))
+
+ggplot(df) +
+  aes(x= count, y=0.5, ymin = ci_lo, ymax = ci_hi) +
+  geom_point() +
+  geom_errorbar() +
+  labs(title = paste0(c.level*100,"% Konfidenzintervall"),
+       x="Anzahl Münzwürfe",
+       y="Wahrscheinlichkeit für Kopf") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  NULL
+```
+
+---
+
+## Null-Hypothesen Signifikanz Test (NHST)
+Jeder Test benötigt:
+- Null-Hypothese $H_0$ - Wie die Welt ohne unsere Erkenntnis sein sollte.
+- Alternativ-Hypothese $H_1$ - Der gefundene Wert in unserer Stichprobe.
+- Freiheitsgrade (df) - Werden aus der Stichprobengröße berechnet.
+
+Jeder Test liefert:
+- eine Teststatistik, z.B. $t$
+- einen Signifikanz-Wert, $p$
+
+Wir legen fest:
+- Signifikanz-Niveau $\alpha = 0.05$ - Schwelle, ab der wir die Null-Hypothese verwerfen.
+  - unser p-Wert muss also kleiner sein als 0.05
+
+---
+
+## Signifikanz vs. Bedeutsamkeit
+
+- Statistisch signifikant $\ne$ praktisch bedeutsam
+- Effektgröße (Cohen's d, $\eta^2$, etc.) beschreibt die praktische Relevanz
+
+## UV und AV
+- **Unabhängige Variable (UV)**: wird variiert oder gruppiert
+- **Abhängige Variable (AV)**: wird gemessen
+
+## Unterschieds- vs. Zusammenhangshypothese
+
+**Unterschied:**
+- t-Test, ANOVA
+- Gruppen vergleichen
+
+**Zusammenhang:**
+- Korrelation, Regression
+- Variablen in Beziehung setzen

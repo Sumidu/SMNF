@@ -1,0 +1,45 @@
+---
+title: "Inferenz Kategoriale Daten"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "Prof. Dr. André Calero Valdez"
+date: ""
+output:
+  powerpoint_presentation:
+    reference_doc: "../Vorlage-Lehre.pptx"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+# Binomial-Test
+
+---
+
+## Binomial-Test
+
+Inhalt folgt.
+
+# z-Test
+
+---
+
+## z-Test
+
+Inhalt folgt.
+
+# Chi-Quadrat-Test
+
+---
+
+## Chi-Quadrat-Test
+
+Inhalt folgt.
+
+# Phi-Korrelation
+
+---
+
+## Phi-Korrelation
+
+Inhalt folgt.

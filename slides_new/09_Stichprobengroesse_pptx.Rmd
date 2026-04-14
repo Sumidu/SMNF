@@ -1,0 +1,37 @@
+---
+title: "Stichprobengröße und Verfahrenswahl"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "Prof. Dr. André Calero Valdez"
+date: ""
+output:
+  powerpoint_presentation:
+    reference_doc: "../Vorlage-Lehre.pptx"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+# Poweranalyse
+
+---
+
+## Poweranalyse
+
+Inhalt folgt.
+
+# Stichprobengröße bestimmen
+
+---
+
+## Stichprobengröße
+
+Inhalt folgt.
+
+# Verfahrenswahl
+
+---
+
+## Verfahrenswahl
+
+Inhalt folgt.

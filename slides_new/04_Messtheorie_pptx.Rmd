@@ -1,0 +1,392 @@
+---
+title: "Forschungsinstrument & Messtheorie"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "Prof. Dr. André Calero Valdez"
+date: ""
+output:
+  powerpoint_presentation:
+    reference_doc: "../Vorlage-Lehre.pptx"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(datasets)
+```
+
+## Wiederholung
+
+**Wissenschaftstheorie, Theorie und Empirie**
+
+Kritischer Rationalismus als Grundlage der Verbindung von Theorie und Empirie
+
+**Empirische Methoden**
+
+1. Erhebungsmethoden
+2. Auswertungsmethode
+
+---
+
+## Übersicht über empirische Methoden
+
+**Sammeln von Daten – Erhebungsmethoden**
+
+Hier quantitativ (z.B. Fragebogenstudie oder Experiment). Dazu gehört Wissen über:
+
+- Testtheorie, Stichprobenziehung, Survey-Methodik, Skalen, etc.
+
+**Auswerten von Daten – Auswertungsmethoden**
+
+Deskriptive, explorative und Inferenzstatistik
+
+- Unterscheidung nach Methodenzweck: Beschreiben, Entdecken und Prüfen
+- Strukturentdeckende Verfahren vs. strukturprüfende Verfahren
+
+# Erhebungsmethoden
+
+---
+
+## Erhebungsmethoden
+
+Wie können Medieninformatiker psychologische Daten erheben?
+
+Was für Daten gibt es überhaupt?
+
+---
+
+## Empirische Daten
+
+Ergebnisse eines empirischen Mess- oder Beobachtungsprozesses
+
+- Luftfeuchtigkeit
+- Windstärke
+- Körpergröße
+- Intelligenz?
+- Ängstlichkeit?
+
+**Eindeutige Kodierung eines empirischen Gegenstandes**
+
+- Symbol im Modell und Entsprechung in der Realität
+- Kodierung: Abbildungsprozess von Realität ↔ Modell
+- Präzision der Abbildung (?)
+
+---
+
+## Empirische Daten — Messwerte
+
+**Messwerte der Endknoten des Faktorenraums**
+
+- Inhaltlich relevant für die Forschungsfrage
+- Für die Messung geeignete Kodierung
+- Für die Auswertung geeignete Kodierung
+
+**Typischerweise Kodierung als mathematisches Symbol**
+
+- Größe in cm: **175**
+- Windstärke in Bft: **12**
+- Intelligenz in IQ-Punkten: **131**
+
+**Transformation zwischen Kodierungen**
+
+- Bft in km/h: 12 → >118 km/h (logarithmische Transformation)
+
+# Skalenniveaus
+
+---
+
+## Skalenniveaus
+
+Wie unterscheiden sich folgende Variablen?
+
+- Alter
+- Geschlecht
+- PLZ
+- Größe in cm
+- Gewicht in kg
+- Lieblingsfilm
+
+---
+
+## Skalenniveaus
+
+Nominal > Ordinal > Intervall > Verhältnis (Kardinal: Intervall, Verhältnis)
+
+**Nominale Daten**
+
+- Niedrigstes Skalenniveau
+- Gleichheit und Ungleichheit
+- Messbarkeit: Häufigkeit
+- *Beispiel: Geschlecht, PLZ, Vorname*
+
+**Ordinale Daten**
+
+- Geordnete Daten
+- Kleiner/größer, vorher/nachher Beziehungen
+- Messbarkeit: Häufigkeit, Reihenfolge
+- *Beispiel: Rangliste (Tabelle), Schulnoten (sehr gut, gut)*
+
+---
+
+## Skalenniveaus
+
+**Intervallskalierte Daten**
+
+- Geordnete Daten
+- Zwischenwerte sind sinnvoll und gleichabständig
+- Messbarkeit: Häufigkeit, Reihenfolge, Abstände
+- *Beispiel: Datum, Intelligenzquotient*
+
+**Verhältnisskalierte Daten**
+
+- Geordnet und gleichabständig
+- Natürlicher Nullpunkt
+- Messbarkeit: Häufigkeit, Reihenfolge, Abstände, Verhältnisse
+- *Beispiel: Lebensalter, Länge in cm*
+
+---
+
+## Skalenniveaus — Kategorien
+
+**Kategoriale Variablen (Faktoren)**
+
+- Nominal, Ordinal
+
+**Metrische Variablen (Skalen)**
+
+- Intervall, Verhältnis
+
+**Diskret vs. stetige Merkmale**
+
+- Diskret: endlich viele Ausprägungen (∈ ℕ) — Geschlecht, Schulnoten
+- Stetig: unendlich viele Ausprägungen (∈ ℝ) — Länge
+- Pseudostetig: können in stetige Ausprägungen umgerechnet werden — Geld
+
+---
+
+## Faktoren
+
+```{r echo=FALSE, out.width="85%", dpi=600}
+knitr::include_graphics("figs/messtheorie/Datalevel.jpg")
+```
+
+---
+
+## Skalen
+
+```{r echo=FALSE, out.width="70%", dpi=600}
+knitr::include_graphics("figs/messtheorie/continuousDisc.jpg")
+```
+
+---
+
+## Messtheorie
+
+Was bedeutet messen? Warum? Wie?
+
+![](figs/messtheorie/messen.png)
+
+---
+
+## Normierung und Eichung — Urmeter
+
+![](figs/messtheorie/urmeter.jpg)
+
+---
+
+## Normierung und Eichung — Urkilogramm und Projekt Avogadro
+
+![](figs/messtheorie/avogadro.jpg)
+
+Urkilo in Frankreich verlor 50 Mikrogramm.
+
+**1,2 Mio. € Projektvolumen — Neudefinition**
+
+Silicium-Kugel mit 99,994% Reinheit
+
+- Silicium-28
+- 93,7 mm
+- 30 nm Abweichung
+
+---
+
+## Messungenauigkeit
+
+![](figs/messtheorie/messen3.png)
+
+---
+
+## Messungenauigkeit
+
+![](figs/messtheorie/cent.png)
+
+---
+
+## Messgenauigkeit erhöhen
+
+**Fehler bei der Messung sind zufällig**
+
+- Mal messen wir zu viel, mal zu wenig
+
+**Im Durchschnitt sollte das Ergebnis korrekt sein.**
+
+- Voraussetzung: Messfehler sind normalverteilt.
+
+**Je mehr Messungen, desto genauer die Messung!**
+
+- Stichprobengröße, Itemanzahl
+
+---
+
+## Wie misst man Einstellungen, Emotionen, Haltungen?
+
+- Lineal für "Ängstlichkeit"?
+- Lineal für "Selbstvertrauen"?
+- Lineal für "Internetnutzungshäufigkeit"?
+
+**Abstrakte Messgröße**
+
+Kann man das überhaupt messen?
+
+---
+
+## Likert Skala
+
+Besonderheit in der empirischen Sozialforschung. Messung von Einstellungen, Haltungen, Emotionen, etc.
+
+**Mehrere Items messen dasselbe Konstrukt**
+
+- Erhöhen der Messgenauigkeit
+- Pseudo-intervallskalierte Daten
+
+**Ordinale Messskala (6-Punkt Likert Skala)**
+
+1. "Ich bin für die Einführung des Euro."
+2. "Ich bevorzuge eine gemeinsame Währung in der EU."
+
+---
+
+## Gerade oder ungerade?
+
+**Gerade Likert-Skalen**
+
+- Forced choice
+- Vermeiden von Antworten wird reduziert
+
+**Ungerade Likert-Skalen**
+
+- Möglichkeit keine Meinung abzugeben
+- Möglichkeit neutrale Meinung abzugeben
+
+**"Keine Angabe" als N+1-te Option**
+
+---
+
+## Ordinal oder Intervall
+
+Ob einzelne Items Likert-Skalen ordinal oder intervall-skalierte Daten liefern, wird noch diskutiert.
+
+Wo ist der Unterschied?
+
+- Willkürliche Wahl der "Labels"
+- Gleichabständigkeit?
+- Auswahl der Verfahren: ordinale vs. lineare Regression, t-Test vs. Wilcoxon signed Rank test
+
+**Ab 4 (besser 8) Items intervallskaliert**
+
+- Summative Skala
+- Zentraler Grenzwertsatz
+
+---
+
+## Reflektive Selbstauskunftskalen
+
+Die latente Variable ist ein Konstrukt oder Faktor.
+
+- Beispiele: Intelligenz, Gedächtnis, Emotionen, etc.
+
+Keine tatsächliche Entität, nicht wirklich "greifbar"
+
+Zwei Formen der latenten Variable:
+
+- formative Messung: Wie man die latente Variable misst, bestimmt ihren Inhalt. Z.B. "Intelligenz ist das, was der Intelligenztest misst"
+- reflektive Messung: psychologische Tests und empirische Untersuchungsformen als Indikatoren für etwas "Dahinterliegendes"
+
+---
+
+## Forschungsmodell
+
+Forschungsfrage: Wirkt sich die Offenheit einer Person auf ihre Intelligenz aus?
+
+![](figs/messtheorie/OI-Modell.png)
+
+---
+
+## Antwortprozess und Störfaktoren
+
+![](figs/messtheorie/responseProcess.png)
+
+- In jedem Prozessschritt können Fehler passieren
+- Die mittleren Schritte können ausfallen
+
+**Typische Antwortverzerrungen:**
+
+- Zustimmungstendenz, Soziale Erwünschtheit, Anwesenheit Dritter, Sponsorship-Effekte, etc.
+
+---
+
+## ATI-Skala für interaktionsbezogene Technikaffinität
+
+```{r echo=FALSE, out.width="50%", dpi=600}
+knitr::include_graphics("figs/messtheorie/ati.png")
+```
+
+*Franke, T., Attig, C., & Wessel, D. (2019). A Personal Resource for Technology Interaction: Development and Validation of the Affinity for Technology Interaction (ATI) Scale. International Journal of Human–Computer Interaction, 35(6), 456-467.*
+
+---
+
+## KUT-Skala für Kontrollüberzeugung im Umgang mit Technik
+
+```{r echo=FALSE, out.width="80%", dpi=600}
+knitr::include_graphics("figs/messtheorie/kut.png")
+```
+
+*G. Beier (1999). Kontrollüberzeugungen im Umgang mit Technik. In: Report Psychologie, 24 (1999) 9, S. 684-693*
+
+---
+
+## Eigenschaften
+
+- 6 positive, 3 negative Items
+- Messen alle den selben Gegenstand
+- Kodierung: 1–6
+- Inverse Kodierung bei den Items 3, 6, 8
+
+---
+
+## Fragebogen
+
+**Ziel: Quantifizierung von verdeckten Wirkzusammenhängen**
+
+Grundannahmen: Determinismus, Empirie, Falsifizierbarkeit, Sparsamkeit
+
+**Hypothese und Operationalisieren**
+
+- Wirkzusammenhang mathematisch beschreiben
+- Bedingung und Kontrollbedingung
+- Statistisches Testverfahren!
+
+**Variablen (UV → AV)**
+
+- Unabhängige – eher demographische / psychometrische Daten
+- Abhängige – spezifische Daten
+
+**Konfundierung**
+
+Kontrollierte Variable – störende Einflussfaktoren
+
+# Experimentelles Design
+
+---
+
+## Experimentelles Design (UV/AV, Konfundierung)
+
+Inhalt folgt.

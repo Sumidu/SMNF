@@ -3,7 +3,7 @@
 .RData
 .Ruserdata
 .DS_Store
-libs/*
+libs/*.*
 slides_new/*.html
 *.pptx
-_files
+*_files

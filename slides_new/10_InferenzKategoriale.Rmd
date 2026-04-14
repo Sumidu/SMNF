@@ -1,0 +1,65 @@
+---
+title: "Inferenz Kategoriale Daten"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "**Prof. Dr. André Calero Valdez**"
+date: ""
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "imis.css"]
+    lib_dir: libs
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(kableExtra)
+```
+
+```{r child="header.Rmd"}
+```
+
+---
+class: inverse, center, middle
+# .yellow[Binomial-Test]
+
+---
+# Binomial-Test
+
+Inhalt folgt.
+
+---
+class: inverse, center, middle
+# .yellow[z-Test]
+
+---
+# z-Test
+
+Inhalt folgt.
+
+---
+class: inverse, center, middle
+# .yellow[Chi-Quadrat-Test]
+
+---
+# Chi-Quadrat-Test
+
+Inhalt folgt.
+
+---
+class: inverse, center, middle
+# .yellow[Phi-Korrelation]
+
+---
+# Phi-Korrelation
+
+Inhalt folgt.
+
+---
+class: inverse, center, middle
+---
+class: inverse, center, middle
+## .yellow[ [Zurück zur Übersicht](index.html)]

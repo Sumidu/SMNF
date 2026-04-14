@@ -1,0 +1,37 @@
+---
+title: "Datenschutz und Ethik"
+subtitle: "Statistik und Methoden der Nutzerforschung PY1802"
+author: "Prof. Dr. André Calero Valdez"
+date: ""
+output:
+  powerpoint_presentation:
+    reference_doc: "../Vorlage-Lehre.pptx"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+# Wissenschaftstheorie
+
+---
+
+## Wissenschaftstheorie
+
+Inhalt folgt.
+
+# Datenschutz
+
+---
+
+## Datenschutz
+
+Inhalt folgt.
+
+# Ethik in der Forschung
+
+---
+
+## Ethik in der Forschung
+
+Inhalt folgt.
