@@ -23,9 +23,9 @@ df_raw <- read_csv("live_survey/Fragebogen Forschungsmethoden.csv")
 # ── Spaltennamen kürzen ───────────────────────────────────────────────────────
 names(df_raw) <- c(
   "timestamp", "geschlecht", "alter",
-  # Tech-Affinität (ATUH, 9 Items)
-  "atuh1", "atuh2", "atuh3", "atuh4", "atuh5",
-  "atuh6", "atuh7", "atuh8", "atuh9",
+  # Tech-Affinität (ATI, 9 Items)
+  "ati1", "ati2", "ati3", "ati4", "ati5",
+  "ati6", "ati7", "ati8", "ati9",
   # Big Five (21 Items)
   "bf_e1r", "bf_v1r", "bf_g1",  "bf_n1",  "bf_o1",
   "bf_e2",  "bf_v2",  "bf_g2r", "bf_n2r", "bf_o2",
@@ -48,7 +48,7 @@ names(df_raw) <- c(
 # ── Rekodierung Likert-Skalen ─────────────────────────────────────────────────
 
 # Tech-Affinität: 6-stufig
-atuh_levels <- c(
+ati_levels <- c(
   "stimmt gar nicht"        = 1,
   "stimmt weitgehend nicht" = 2,
   "stimmt eher nicht"       = 3,
@@ -75,6 +75,7 @@ pref_levels <- c(
   "sicher Option 2" = 5
 )
 
+# Funktion zur Rekodierung der Skalenwerte
 recode_scale <- function(x, levels) {
   unname(levels[x])
 }
@@ -84,26 +85,59 @@ df <- df_raw %>%
     timestamp  = timestamp,
     geschlecht = as.factor(geschlecht),
     alter      = as.numeric(alter),
-    across(starts_with("atuh"), ~ recode_scale(.x, atuh_levels)),
+    across(starts_with("ati"),  ~ recode_scale(.x, ati_levels)),
     across(starts_with("bf_"),  ~ recode_scale(.x, bf_levels)),
     across(starts_with("p_"),   ~ recode_scale(.x, pref_levels))
   )
 
 # Reverse-Coding (Items mit "r" im Namen: 6 - Wert)
-r_items <- names(df)[str_detect(names(df), "^bf_.*\\dr$")]
+# select: begins with bf_ und ends with r
+reverse_items <- str_detect(names(df), "^bf_.*\\dr$")
+r_items <- names(df)[reverse_items]
 df <- df %>%
   mutate(across(all_of(r_items), ~ 6 - .x))
 
 # ── Skalenwerte berechnen ─────────────────────────────────────────────────────
+
+# Reliabilität
+psych::alpha(df %>% select(starts_with("ati"))) # ATI Skala
+psych::alpha(df %>% select(starts_with("bf_e"))) # Extraversion
+psych::alpha(df %>% select(starts_with("bf_v"))) # Verträglichkeit
+psych::alpha(df %>% select(starts_with("bf_g"))) # Gewissenhaftigkeit
+psych::alpha(df %>% select(starts_with("bf_n"))) # Neurotizismus
+psych::alpha(df %>% select(starts_with("bf_o"))) # Offenheit
+
+
+# (psych way)
+# do one way only
+keys.list = list(
+  ati_score          = names(df)[str_starts(names(df), "ati")],
+  extraversion       = names(df)[str_starts(names(df), "bf_e")],
+  vertraeglichkeit   = names(df)[str_starts(names(df), "bf_v")],
+  gewissenhaftigkeit = names(df)[str_starts(names(df), "bf_g")],
+  neurotizismus      = names(df)[str_starts(names(df), "bf_n")],
+  offenheit          = names(df)[str_starts(names(df), "bf_o")]
+)
+
+scores <- psych::scoreItems(
+  keys = keys.list, df
+)
+
+scores$scores
+df %>% bind_cols(scores$scores)
+
+# (easy way, works only if everythin is recoded properly)
 df <- df %>%
   mutate(
-    atuh_score         = rowMeans(across(starts_with("atuh")), na.rm = TRUE),
+    ati_score          = rowMeans(across(starts_with("ati")), na.rm = TRUE),
     extraversion       = rowMeans(across(starts_with("bf_e")), na.rm = TRUE),
     vertraeglichkeit   = rowMeans(across(starts_with("bf_v")), na.rm = TRUE),
     gewissenhaftigkeit = rowMeans(across(starts_with("bf_g")), na.rm = TRUE),
     neurotizismus      = rowMeans(across(starts_with("bf_n")), na.rm = TRUE),
     offenheit          = rowMeans(across(starts_with("bf_o")), na.rm = TRUE)
   )
+
+
 
 # ── Deskriptive Statistik ─────────────────────────────────────────────────────
 cat("=== Stichprobe ===\n")
@@ -116,9 +150,9 @@ cat("\n--- Alter ---\n")
 cat("M =", round(mean(df$alter, na.rm = TRUE), 1),
     " SD =", round(sd(df$alter, na.rm = TRUE), 1), "\n")
 
-cat("\n--- Tech-Affinität (ATUH, 1-4) ---\n")
-cat("M =", round(mean(df$atuh_score, na.rm = TRUE), 2),
-    " SD =", round(sd(df$atuh_score, na.rm = TRUE), 2), "\n")
+cat("\n--- Tech-Affinität (ATI, 1-6) ---\n")
+cat("M =", round(mean(df$ati_score, na.rm = TRUE), 2),
+    " SD =", round(sd(df$ati_score, na.rm = TRUE), 2), "\n")
 
 cat("\n--- Big Five (1-5) ---\n")
 df %>%
@@ -138,26 +172,40 @@ df %>%
   geom_col(show.legend = FALSE) +
   labs(title = "Geschlechterverteilung", x = "Geschlecht", y = "Anzahl") +
   theme_minimal(base_size = 14)
+ggsave("live_survey/geschlecht_plot.png", width = 6, height = 4)
 
-# Alter
+
+ggstatsplot::gghistostats(
+  data = df, x = alter,
+  title = "Altersverteilung",
+  xlab = "Alter (Jahre)", ylab = "Häufigkeit",
+  ggtheme = theme_minimal(base_size = 14)
+)
+ggsave("live_survey/alter_plot.png", width = 6, height = 4)
+
+# Alter# Aati_scorelter
 ggplot(df, aes(x = alter)) +
   geom_histogram(binwidth = 2, fill = "steelblue", color = "white") +
   labs(title = "Altersverteilung", x = "Alter (Jahre)", y = "Häufigkeit") +
   theme_minimal(base_size = 14)
+ggsave("live_survey/alter_histogramm.png", width = 6, height = 4)
 
-# Big Five Profil
+
 df %>%
-  summarise(across(
-    c(extraversion, vertraeglichkeit, gewissenhaftigkeit, neurotizismus, offenheit),
-    ~ mean(.x, na.rm = TRUE)
-  )) %>%
-  pivot_longer(everything(), names_to = "Skala", values_to = "M") %>%
-  ggplot(aes(x = Skala, y = M, fill = Skala)) +
-  geom_col(show.legend = FALSE) +
-  geom_hline(yintercept = 3, linetype = "dashed", color = "gray50") +
-  ylim(1, 5) +
-  labs(title = "Big Five Profil", x = NULL, y = "Mittelwert (1-5)") +
-  theme_minimal(base_size = 14)
+  select(extraversion, vertraeglichkeit, gewissenhaftigkeit, neurotizismus, offenheit) %>%
+  pivot_longer(everything(), names_to = "Skala", values_to = "Wert") %>%
+  group_by(Skala) %>%
+  summarise(M = mean(Wert, na.rm = TRUE),
+            SE = sd(Wert, na.rm = TRUE) / sqrt(n())) %>%
+ggplot() +
+  aes(x=Skala, y=M, colour=Skala) +
+  geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = 0.2) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 3, linetype = "dashed", color = "gray") +
+  coord_flip() +
+  scale_y_continuous(limits = c(1, 5), breaks = 1:5) +
+  theme_bw()
+ggsave("live_survey/bigfive_plot.png", width = 6, height = 4)
 
 # Präferenzen: Balkendiagramm für alle Paare
 pref_cols <- names(df)[str_starts(names(df), "p_")]
@@ -186,3 +234,193 @@ df %>%
   labs(title = "Präferenzen", x = NULL, y = "Anzahl") +
   theme_minimal(base_size = 10)
 
+# Attach variable.labels attr for semantic_differential_plot
+# Format: "[left|right]" extracted from "Option1 vs Option2"
+df$id <- seq_len(nrow(df))
+pref_var_labels <- paste0("[", str_replace(pref_labels, " vs ", "|"), "]")
+all_labels <- setNames(rep(NA_character_, ncol(df)), names(df))
+all_labels[pref_cols] <- pref_var_labels
+attr(df, "variable.labels") <- all_labels
+
+
+
+
+
+
+semantic_differential_plot <- function(data,
+                                       responses = data,
+                                       variable_prefix = "semantic",
+                                       differential_range = 2,
+                                       recode_from_center = TRUE,
+                                       conf_level = 0.95,
+                                       plot_title = "Semantisches Differenzial nach Kategorie",
+                                       y_label = "Tendenz",
+                                       caption = "Mittelwert und 95% Konfidenzintervall (bootstrapped)") {
+  # Pakete prüfen
+  required_packages <- c(
+    "dplyr", "tidyr", "stringr", "ggplot2", "tibble"
+  )
+
+  missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
+  if (length(missing_packages) > 0) {
+    stop(
+      "Folgende Pakete fehlen: ",
+      paste(missing_packages, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  # Kurzreferenzen
+  dplyr <- asNamespace("dplyr")
+  tidyr <- asNamespace("tidyr")
+  stringr <- asNamespace("stringr")
+  ggplot2 <- asNamespace("ggplot2")
+  tibble <- asNamespace("tibble")
+
+  # variable labels auslesen
+  variable_labels <- attr(data, "variable.labels")
+
+  if (is.null(variable_labels)) {
+    stop("Das Objekt 'data' hat keine Attribute 'variable.labels'.", call. = FALSE)
+  }
+
+  # Codebook erzeugen
+  codebook <- tibble::tibble(
+    name = names(data),
+    label = unname(variable_labels)
+  )
+
+  # relevante Variablen filtern
+  semantic_labels <- codebook |>
+    dplyr::filter(stringr::str_starts(name, variable_prefix)) |>
+    dplyr::mutate(
+      label = stringr::str_extract(label, "\\[(.*)\\]")
+    ) |>
+    dplyr::mutate(
+      label = stringr::str_sub(label, start = 2, end = -2)
+    ) |>
+    tidyr::separate(
+      col = label,
+      into = c("left", "right"),
+      sep = "\\|",
+      remove = FALSE
+    )
+
+  if (nrow(semantic_labels) == 0) {
+    stop("Keine Variablen mit dem angegebenen Prefix gefunden.", call. = FALSE)
+  }
+
+  # ID-Spalte prüfen
+  if (!"id" %in% names(responses)) {
+    stop("In 'responses' fehlt eine Spalte namens 'id'.", call. = FALSE)
+  }
+
+  # relevante Antwortdaten auswählen
+  semantic_var_names <- semantic_labels$name
+
+  missing_response_vars <- setdiff(semantic_var_names, names(responses))
+  if (length(missing_response_vars) > 0) {
+    stop(
+      "Diese Variablen fehlen in 'responses': ",
+      paste(missing_response_vars, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  semantic_variables <- responses |>
+    dplyr::select(id, dplyr::all_of(semantic_var_names)) |>
+    stats::setNames(c("id", semantic_labels$left)) |>
+    tidyr::pivot_longer(cols = -id, names_to = "name", values_to = "value") |>
+    dplyr::mutate(
+      value = as.numeric(as.character(value))
+    )
+
+  # optional: 1:5 -> -2:2 umkodieren
+  if (isTRUE(recode_from_center)) {
+    semantic_variables <- semantic_variables |>
+      dplyr::mutate(value = value - (differential_range + 1))
+  }
+
+  # Mittelwerte berechnen
+  semantic_variables <- semantic_variables |>
+    dplyr::group_by(name) |>
+    dplyr::mutate(mean_value = mean(value, na.rm = TRUE)) |>
+    dplyr::ungroup()
+
+  # Reihenfolge nach Mittelwert
+  semantic_labels_ordered <- semantic_labels |>
+    dplyr::left_join(
+      semantic_variables |>
+        dplyr::select(name, mean_value) |>
+        dplyr::distinct(),
+      by = c("left" = "name")
+    ) |>
+    dplyr::arrange(dplyr::desc(mean_value))
+
+  # Plot-Daten vorbereiten
+  plot_data <- semantic_variables |>
+    dplyr::mutate(
+      name_num = as.numeric(
+        factor(name, levels = semantic_labels_ordered$left, ordered = TRUE)
+      )
+    )
+
+  # Plot erzeugen
+  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = name_num, y = value)) +
+    ggplot2::stat_summary(
+      fun.data = "mean_cl_boot",
+      geom = "errorbar",
+      width = 0.3,
+      fun.args = list(conf.int = conf_level)
+    ) +
+    ggplot2::stat_summary(
+      fun = mean,
+      geom = "point"
+    ) +
+    ggplot2::stat_summary(
+      fun = mean,
+      geom = "line",
+      ggplot2::aes(group = 1)
+    ) +
+    ggplot2::scale_y_continuous(
+      limits = c(-differential_range, differential_range)
+    ) +
+    ggplot2::scale_x_continuous(
+      name = NULL,
+      limits = c(0.5, length(semantic_labels_ordered$left) + 0.5),
+      expand = c(0, 0),
+      breaks = seq_along(semantic_labels_ordered$left),
+      minor_breaks = NULL,
+      labels = semantic_labels_ordered$left,
+      sec.axis = ggplot2::dup_axis(
+        labels = semantic_labels_ordered$right,
+        name = NULL
+      )
+    ) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(
+      title = plot_title,
+      y = y_label,
+      caption = caption
+    )
+
+  # alles zurückgeben
+  list(
+    codebook = codebook,
+    semantic_labels = semantic_labels,
+    semantic_variables = semantic_variables,
+    semantic_labels_ordered = semantic_labels_ordered,
+    plot = p
+  )
+}
+
+result <- semantic_differential_plot(
+  data = df,
+  responses = df,
+  variable_prefix = "p_",
+  differential_range = 2,
+  recode_from_center = TRUE
+)
+
+result$plot
+ggsave("live_survey/praeferenzen_plot.png", width = 8, height = 10)
