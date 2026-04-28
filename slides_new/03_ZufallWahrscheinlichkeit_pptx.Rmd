@@ -52,6 +52,7 @@ $$SD=+{\sqrt {{\frac {1}{n-1}}\sum \limits _{i=1}^{n}\left(x_{i}-{\overline {x}}
 - Anzahl Einwohner pro Stadt
 
 ---
+
 ## Münzwurf oder Bernoulli-Verteilungen
 - Konvention: *p* Probability.
 $$p \in [0;1]$$
@@ -73,6 +74,7 @@ Trifft ein Ereignis ein oder nicht? Werfen wir Kopf (oder Zahl).
 
 
 ---
+
 ## Plot der Verteilungsfunktion von Bernoulli
 
 ## Fairer Münzwurf (*p = 0.5*)
@@ -113,6 +115,7 @@ unfair_coin %>% ggplot() + aes(y = prob, x = result) + geom_col() + theme_minima
 ```
 
 ---
+
 ## Würfelwurf oder Gleichverteilung
 Einfaches Beispiel: 6-seitiger fairer Würfel
 - *P(1) = 1/6*, *P(2) = 1/6*, ...
@@ -131,6 +134,7 @@ fair_dice %>% ggplot() + aes(y = prob, x = result) + geom_col() + theme_minimal(
 ## Jedes Ereignis ist gleichwahrscheinlich!
 
 ---
+
 ## Nachrichteneingang oder Poisson-Verteilung
 
 - Wir kriegen im Schnitt $\lambda$ (lambda) Nachrichten pro Stunde (Rate)
@@ -148,6 +152,7 @@ messages %>% ggplot() + aes(y = prob, x = k) + geom_col() + theme_minimal(base_s
 ```
 
 ---
+
 ## Definitionen
 
 - $X$ **Zufallsvariable**, eine Variable die vom Zufall abhängig ist.
@@ -168,6 +173,7 @@ messages %>% ggplot() + aes(y = prob, x = k) + geom_col() + theme_minimal(base_s
 
 
 ---
+
 ## Diskrete und stetige Wahrscheinlichkeiten
 
 ### Diskrete Verteilungen
@@ -190,6 +196,7 @@ messages %>% ggplot() + aes(y = prob, x = k) + geom_col() + theme_minimal(base_s
 
 
 ---
+
 ## Gauss'sche oder Normalverteilung
 
 ```{r gaussian, echo = FALSE, fig.height=5}
@@ -204,6 +211,7 @@ gaus %>% ggplot() + aes(x = x, y = prob) + geom_col() + theme_minimal(base_size 
 ```
 
 ---
+
 ## Gauss'sche oder Normalverteilung
 In der Natur sind viele Dinge normalverteilt. Warum?
   * Körpergröße
@@ -215,6 +223,7 @@ In der Natur sind viele Dinge normalverteilt. Warum?
 * Alle Zufallsprozesse, die man summiert, werden normalverteilt
 
 ---
+
 ## PDF und CDF
 
 ## Probability Density Function (Dichtefkt.)
@@ -228,6 +237,7 @@ In der Natur sind viele Dinge normalverteilt. Warum?
 - $F(x) = P(X \leq x)$
 
 ---
+
 ## Parameter der Verteilung
 
 **Parameter** sind Werte, die den Verlauf der Wahrscheinlichkeitsfunktion beschreiben.
@@ -245,6 +255,7 @@ $$P(X \leq x_1) = \int_{-\infty}^{x_1} f(x) dx = \int_{-\infty}^{x_1} \frac{1}{\
 Warum $\pi$? https://www.youtube.com/watch?v=cy8r7WSuT1I
 
 ---
+
 ## Stichproben
 
 - Stichproben können von der Idealverteilung abweichen
@@ -262,6 +273,7 @@ Warum $\pi$? https://www.youtube.com/watch?v=cy8r7WSuT1I
   - Quoten Sampling
 
 ---
+
 ## Stichprobenverzerrung
 
 ### Störungen durch Stichprobeneffekte
@@ -273,6 +285,7 @@ Warum $\pi$? https://www.youtube.com/watch?v=cy8r7WSuT1I
 - Coverage bias: Fehlende Abdeckung (z.B. Haushalt ohne Telefon)
 
 ---
+
 ## Würfel-Experiment 1
 ```{r seedset, echo=FALSE}
 set.seed(0)
@@ -295,6 +308,7 @@ ggplot(as.data.frame(x)) +
 ```
 
 ---
+
 ## Würfel-Experiment 2
 
 ```{r throw_dice_2}
@@ -314,6 +328,7 @@ ggplot(as.data.frame(x)) +
 ```
 
 ---
+
 ## Würfel-Experiment 3
 
 ```{r throw_dice_3}
@@ -333,6 +348,7 @@ ggplot(as.data.frame(x)) +
 ```
 
 ---
+
 ## 4 Würfel-Experimente
 ```{r throw_dice_4, echo=F, fig.height=6, message=FALSE}
 # Throw a six sided dice 1000 times
@@ -358,6 +374,7 @@ print(paste0("Summe: ", mdf$mx))
 
 
 ---
+
 ## 1000 x 10 Würfelwürfe
 ```{r thousand_dices, echo=FALSE, fig.height=6, message=FALSE, warning=FALSE}
 #set.seed(1000)
@@ -386,6 +403,7 @@ Standardabweichung = `r sd(mdf$mx)`
 
 
 ---
+
 ## Ideale Normalverteilung
 - Mittelwert 0
 - Standardabweichung 1
@@ -394,6 +412,7 @@ c = curve(dnorm, -5, 5, n = 1e4, ylab = "Wahrscheinlichkeit")
 ```
 
 ---
+
 ## Z-Transformation
 Jede Normalverteilung kann auf die Standard-Normalverteilung abgebildet werden. ** => Standardisierung**
 
@@ -430,6 +449,7 @@ mdfs %>% ggplot() +
 ```
 
 ---
+
 ## Z-Transformation in einer Skala
 
 ```{r sidebyside, echo=F, fig.width = 10, fig.height=5}
@@ -459,6 +479,7 @@ mdboth %>% ggplot() +
 
 
 ---
+
 ## Schiefe (engl. skew)
 
 ### Gibt es mehr Daten links oder rechts vom Mittelwert?
@@ -468,6 +489,7 @@ mdboth %>% ggplot() +
 ![](figs/rechtsschief.png)
 
 ---
+
 ## Kurtosis (Wölbung)
 ### Gibt es mehr Daten nah oder fern vom Mittelwert?
 
@@ -480,6 +502,7 @@ platos ~ flach
 ![](figs/verteilungen/platykurtisch.png)
 
 ---
+
 ## Würfelexperiement
 
 
@@ -510,6 +533,7 @@ psych::describe(mdf$mx) -> results
 
 
 ---
+
 ## Einwohnerzahlen - Power-Law/Pareto
 - Entstehen durch "Matthäus-Effekte", Netzwerkeffekte
 ```{r pareto, echo=FALSE, fig.height=5, message=FALSE, warning=FALSE}
@@ -527,6 +551,7 @@ df <- data.frame(nums = 1:1000, dice_dist = (sample(1:6,1000, replace=TRUE)), di
 
 
 ---
+
 ## Darstellungsformen für Verteilungen
 
 ### Histogram
@@ -547,6 +572,7 @@ ggplot(df) + aes(y = dice_dist) +
 ```
 
 ---
+
 ## Darstellungsformen für Verteilungen
 
 ### Histogram
@@ -568,6 +594,7 @@ ggplot(df) + aes(y = dist_norm) +
 
 
 ---
+
 ## Darstellungsformen für Verteilungen
 
 ### Histogram
@@ -588,10 +615,12 @@ ggplot(df) + aes(y = dist_pareto) +
 
 
 ---
+
 ## Übersicht über Verteilungen
 ![](figs/verteilungen/distributions.png)
 
 ---
+
 ## R Packages
 ```{r eval=FALSE}
 library(smovie)

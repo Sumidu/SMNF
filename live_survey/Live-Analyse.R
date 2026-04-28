@@ -423,4 +423,22 @@ result <- semantic_differential_plot(
 )
 
 result$plot
-ggsave("live_survey/praeferenzen_plot.png", width = 8, height = 10)
+ggsave("live_survey/praeferenzen_plot.png", width = 8, height = 6)
+
+
+
+
+## Analyse correlations between big five und präferenzen
+cor_matrix <- df %>%
+  select(extraversion, vertraeglichkeit, gewissenhaftigkeit, neurotizismus, offenheit, starts_with("p_")) %>%
+  cor(use = "pairwise.complete.obs")
+# plot
+library(corrplot)
+corrplot(cor_matrix, method = "color", tl.col =
+         "black", tl.srt = 45)
+# plot a sorted corrplot
+corrplot(cor_matrix, method = "color", tl.col =
+         "black", tl.srt = 45, order = "hclust")
+
+
+
